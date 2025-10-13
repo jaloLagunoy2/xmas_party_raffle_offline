@@ -7,8 +7,8 @@
 <style>
 body{font-family:Arial, background:#111;color:#fff;text-align:center;padding:20px;}
 h1{color:#ffdd57;}
-#prizeBox{margin-top:10px;font-size:20px;color:#ddd;}
-#nameBox{margin-top:40px;font-size:48px;padding:30px;background:#222;border-radius:8px;min-height:80px;display:flex;align-items:center;justify-content:center;}
+#prizeBox{margin-top:40px;font-size:48px;padding:30px;background:#222;border-radius:8px;min-height:80px;display:flex;align-items:center;justify-content:center;}
+#nameBox{margin-top:40px;font-size:48px;padding:30px;background:#f95316;border-radius:8px;min-height:80px;display:flex;align-items:center;justify-content:center;}
 .controls{margin-top:20px;}
 button{padding:10px 16px;margin:6px;border-radius:6px;border:none;cursor:pointer;font-size:16px;}
 .btn-claim{background:#28a745;color:#fff;}
@@ -20,9 +20,10 @@ button{padding:10px 16px;margin:6px;border-radius:6px;border:none;cursor:pointer
 </style>
 </head>
 <body>
-<h1>🎰 Raffle Draw</h1>
-<div id="prizeBox"></div>
+<!-- <h1>🎰 Raffle Draw</h1> -->
+
 <div id="nameBox">Preparing...</div>
+<div id="prizeBox"></div>
 <button id="startDrawBtn" class="btn-claim"   style="margin-top:20px;padding:10px 20px;font-size:18px;">🎯 Start Draw</button>
 
 <div class="controls">
@@ -46,6 +47,20 @@ let currentPick = null;
 let autoDrawTimeout = null;
 let batchDrawing = false;
 let drawInterval = 1 * 1000;
+
+
+function loadBackground() {
+    const bgPath = localStorage.getItem('raffleBgPath');
+    if (bgPath) {
+        document.body.style.background = `url('${bgPath}') no-repeat center center fixed`;
+        document.body.style.backgroundSize = 'cover';
+    } else {
+        document.body.style.background = 'linear-gradient(135deg, #1a1a1a, #111)';
+    }
+}
+
+// Call on page load
+loadBackground();
 
 function refreshFromStorage(){
   attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');

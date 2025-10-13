@@ -34,6 +34,11 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
     <button id="clearCacheBtn" class="btn-clear">Clear All Cache</button>
     <button id="resetDrawsBtn" class="btn-reset">Reset Prize Draw Counts</button>
     <button id="exportWinnersBtn" class="btn-export">Export Winners CSV</button>
+    <div style="margin-top: 20px;">
+      <label for="bgInput">Set Background:</label>
+      <input type="file" id="bgInput" accept="image/png">
+      <button id="clearBgBtn">Clear Background</button>
+    </div>
   </p>
   <p class="info">Tip: Use "Clear All Cache" to reset all data, or "Reset Prize Draw Counts" to reset draw counts but keep winners.</p>
 </div>
@@ -72,6 +77,49 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 </div>
 
 <script>
+  // +background
+  const bgInput = document.getElementById('bgInput');
+  const clearBgBtn = document.getElementById('clearBgBtn');
+
+  // Load saved background on start
+  function loadBackground() {
+      const bgPath = localStorage.getItem('raffleBgPath');
+      if (bgPath) {
+          document.body.style.background = `url('${bgPath}') no-repeat center center fixed`;
+          document.body.style.backgroundSize = 'cover';
+      } else {
+          document.body.style.background = ''; // default
+      }
+  }
+
+  // Save selected file and preview it
+  bgInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+          const dataUrl = event.target.result;
+          localStorage.setItem('raffleBgPath', dataUrl);
+          loadBackground();
+      };
+      reader.readAsDataURL(file); // store as base64
+  });
+
+  // Clear background
+  clearBgBtn.addEventListener('click', () => {
+      localStorage.removeItem('raffleBgPath');
+      loadBackground();
+  });
+
+  // Initial load
+  loadBackground();
+  // -background
+
+
+
+
+
 // Utilities
 function parseCSV(text){
   return text.trim().split('\n').map(line => line.split(',').map(c => c.trim()));
