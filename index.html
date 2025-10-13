@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Christmas Raffle v6 - Fixed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background:#f6f9fb; color:#222; }
+h1 { text-align:center; color:#b30000; }
+.section { background:#fff; padding:16px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:16px; }
+table { width:100%; border-collapse:collapse; margin-top:8px; }
+th, td { border:1px solid #e6e6e6; padding:8px; text-align:center; }
+th { background:#fafafa; }
+button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
+.btn-single { background:#007bff; color:white; }
+.btn-batch { background:#6f42c1; color:white; }
+.btn-reset { background:#dc3545; color:white; }
+.btn-clear { background:#6c757d; color:white; }
+.btn-export { background:#28a745; color:white; }
+.completed { background:#d4edda; }
+.disabled { opacity:0.5; pointer-events:none; }
+.info { font-size:14px; color:#555; margin-top:8px; }
+</style>
+</head>
+<body>
+<h1>🎄 Christmas Raffle (v6 - Fixed)</h1>
+
+<div class="section">
+  <h3>Upload CSVs (or load cached data)</h3>
+  <p><input type="file" id="attFile" accept=".csv"> Attendees CSV</p>
+  <p><input type="file" id="prizeFile" accept=".csv"> Prizes CSV (id,name,type,totalWinners,drawCount,sequence,auto_claim)</p>
+  <p>
+    <button id="loadBtn">Load & Cache</button>
+    <button id="clearCacheBtn" class="btn-clear">Clear All Cache</button>
+    <button id="resetDrawsBtn" class="btn-reset">Reset Prize Draw Counts</button>
+    <button id="exportWinnersBtn" class="btn-export">Export Winners CSV</button>
+  </p>
+  <p class="info">Tip: Use "Clear All Cache" to reset all data, or "Reset Prize Draw Counts" to reset draw counts but keep winners.</p>
+</div>
+
+<div class="section">
+  <h3>Prizes (sorted by sequence)</h3>
+  <table id="prizeTable">
+    <thead><tr><th>Seq</th><th>ID</th><th>Prize</th><th>Type</th><th>Count</th><th>Actions</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+
+<div class="section">
+  <h3>🏆 Winners List
+    <button id="refreshWinners" title="Refresh winners list" style="margin-left:10px;padding:4px 8px;cursor:pointer;">🔄</button>
+  </h3>
+  <table id="winnersTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Prize</th>
+        <th>Winner</th>
+        <th>Category</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+
+
+<div class="section">
+  <h3>Cached Info</h3>
+  <p>Attendees: <span id="attCount">0</span> | Prizes: <span id="prizeCount">0</span> | Winners: <span id="winnerCount">0</span></p>
+</div>
+
+<script>
+// Utilities
+function parseCSV(text){
+  return text.trim().split('\n').map(line => line.split(',').map(c => c.trim()));
+}
+function download(filename, text){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/csv'}));
+  a.download=filename; a.click();
+}
+
+// Data (load from localStorage)
+let attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
+let prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
+let winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
+
+function updateCounts(){
+  document.getElementById('attCount').textContent = attendees.length;
+  document.getElementById('prizeCount').textContent = prizes.length;
+  document.getElementById('winnerCount').textContent = winners.length;
+}
+
+function saveAll(){
+  localStorage.setItem('attendeesData', JSON.stringify(attendees));
+  localStorage.setItem('prizesData', JSON.stringify(prizes));
+  localStorage.setItem('winnersData', JSON.stringify(winners));
+}
+function renderPrizes(){
+  prizes.sort((a,b) => (parseInt(a.sequence)||0) - (parseInt(b.sequence)||0));
+  const tbody = document.querySelector('#prizeTable tbody');
+  tbody.innerHTML = '';
+
+  const firstIncomplete = prizes.find(p => (parseInt(p.drawCount)||0) < (parseInt(p.totalWinners)||0));
+
+  prizes.forEach(p=>{
+    const tr = document.createElement('tr');
+    const completed = (parseInt(p.drawCount)||0) >= (parseInt(p.totalWinners)||0);
+    let disabled = false;
+
+    if(firstIncomplete && parseInt(p.sequence) > parseInt(firstIncomplete.sequence)) {
+      const prevIncomplete = prizes.find(x =>
+        parseInt(x.sequence) < parseInt(p.sequence) &&
+        (parseInt(x.drawCount)||0) < (parseInt(x.totalWinners)||0)
+      );
+      if(prevIncomplete) disabled = true;
+    }
+
+    // 💡 Add this: disable single draw if auto_claim = 1
+    console.log(p);
+    const singleDisabled = (p.auto_claim && parseInt(p.auto_claim) === 1) ;
+    console.log(singleDisabled);
+
+    tr.innerHTML = `
+      <td>${p.sequence || ''}</td>
+      <td>${p.id}</td>
+      <td>${p.name}</td>
+      <td>${p.type}</td>
+      <td>${(p.drawCount || 0)}/${p.totalWinners}</td>
+      <td>
+        
+        ${singleDisabled ? "<span> ** Auto Claim **  </span>" : ''}
+              
+        ${disabled ? "<span style='color:red'> ** Finish previous prizes first **  </span>" : ''}
+
+        <div ${disabled ? 'hidden': ''} >
+          <button class="btn-single"
+            ${singleDisabled ? 'hidden title="Auto-claim prizes use Batch Draw only"' : ''}
+            onclick="openDraw('${p.id}','single')">Single Draw</button>
+      
+          <button class="btn-batch"
+            ${disabled ? 'hidden title="Finish previous prizes first"' : ''}
+            onclick="openDraw('${p.id}','batch')">Batch Draw</button>
+        </div
+
+      </td>`;
+
+    if(completed) tr.classList.add('completed');
+    tbody.appendChild(tr);
+  });
+
+  updateCounts();
+}
+
+
+// open draw in new tab and persist drawMode/prize
+function openDraw(prizeId, mode){
+
+  console.log(prizeId,mode);
+   localStorage.setItem('selectedPrizeId', prizeId);
+  localStorage.setItem('drawMode', mode); // 'single' or 'batch'
+  saveAll();
+  window.open('draw.html', '_blank');
+
+}
+
+// Load & cache from files
+document.getElementById('loadBtn').addEventListener('click', async ()=>{
+  const aFile = document.getElementById('attFile').files[0];
+  const pFile = document.getElementById('prizeFile').files[0];
+  if(!aFile || !pFile) return alert('Please choose both CSV files.');
+  const at = await aFile.text();
+  const pt = await pFile.text();
+  try{
+    const arows = parseCSV(at);
+    attendees = arows.slice(1).map(r=>({id:r[0], name:r[1], category:r[2]||'Employee'}));
+  }catch(e){alert('Failed parse attendees'); return;}
+  try{
+    const prows = parseCSV(pt);
+    prizes = prows.slice(1).map(r=>({
+      id:r[0], name:r[1], type:r[2]||'Minor',
+      totalWinners: parseInt(r[3])||1,
+      drawCount: parseInt(r[4])||0,
+      sequence: parseInt(r[5])||0,
+      auto_claim: (r[6] && r[6].trim()==='1')?1:0
+    }));
+  }catch(e){alert('Failed parse prizes'); return;}
+  saveAll();
+  renderPrizes();
+  alert('Files loaded and cached.');
+});
+
+// Reset draws (drawCount) only
+document.getElementById('resetDrawsBtn').addEventListener('click', ()=>{
+  if(!confirm('Reset draw counts for all prizes? This will NOT remove winners or attendees.')) return;
+  prizes.forEach(p=>p.drawCount=0);
+  localStorage.setItem('prizesData', JSON.stringify(prizes));
+  renderPrizes();
+  localStorage.setItem('winnersData', JSON.stringify([]));
+  refreshWinnersTable();
+});
+
+// Clear entire cache
+document.getElementById('clearCacheBtn').addEventListener('click', ()=>{
+  if(!confirm('Clear all cached data (attendees, prizes, winners)?')) return;
+  localStorage.removeItem('attendeesData');
+  localStorage.removeItem('prizesData');
+  localStorage.removeItem('winnersData');
+  attendees=[]; prizes=[]; winners=[];
+  renderPrizes();
+  updateCounts();
+
+
+  localStorage.removeItem('selectedPrizeId');
+
+  // ✅ Immediately refresh UI elements
+  const prizeTbody = document.querySelector('#prizeTable tbody');
+  if (prizeTbody) prizeTbody.innerHTML = '';
+
+
+
+  // If you want to also clear other UI text
+  const infoElements = ['#statusText', '#messageBox', '#infoText'];
+  infoElements.forEach(sel => {
+    const el = document.querySelector(sel);
+    if (el) el.textContent = '';
+  });
+});
+
+function refreshWinnersTable() {
+  const winnersTbody = document.querySelector('#winnersTable tbody');
+  if (winnersTbody) winnersTbody.innerHTML = '';
+}
+
+// Export winners
+document.getElementById('exportWinnersBtn').addEventListener('click', ()=>{
+  if(winners.length===0) return alert('No winners yet.');
+  const rows = [['PrizeID','Prize','WinnerID','WinnerName','Category']];
+  winners.forEach(w=> rows.push([w.prizeId, w.prizeName, w.winnerId||'', w.name, w.category||'']));
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  download('winners_export.csv', csv);
+});
+
+// initialize from cache on load
+renderPrizes();
+updateCounts();
+
+// expose for draw tab
+window.__raffleData = {
+  getAttendees: ()=>JSON.parse(localStorage.getItem('attendeesData')||'[]'),
+  getPrizes: ()=>JSON.parse(localStorage.getItem('prizesData')||'[]'),
+  setAttendees: (a)=>{localStorage.setItem('attendeesData', JSON.stringify(a));},
+  setPrizes: (p)=>{localStorage.setItem('prizesData', JSON.stringify(p));},
+  addWinner: (w)=>{ const ws = JSON.parse(localStorage.getItem('winnersData')||'[]'); ws.push(w); localStorage.setItem('winnersData', JSON.stringify(ws)); renderPrizes(); updateCounts(); }
+};
+
+
+// --- Winners List rendering ---
+function renderWinners() {
+  const winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
+  const tbody = document.querySelector('#winnersTable tbody');
+  tbody.innerHTML = '';
+  winners.forEach((w, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${w.prizeName || ''}</td>
+      <td>${w.name || ''}</td>
+      <td>${w.category || ''}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// --- Refresh button handler ---
+document.getElementById('refreshWinners').addEventListener('click', () => {
+  renderWinners();
+});
+
+// --- Initial load ---
+renderWinners();
+
+// --- Also refresh winners when message from draw window arrives ---
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'raffle:update') {
+    renderWinners();
+  }
+});
+
+</script>
+</body>
+</html>

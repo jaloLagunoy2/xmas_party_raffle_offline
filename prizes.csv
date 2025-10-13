@@ -1,0 +1,6 @@
+id,name,type,totalWinners,drawCount,sequence,auto_claim
+P001,Gift Check,Minor,10,0,1,1
+P002,Mug Set,Minor,3,0,2,0
+P003,Bluetooth Speaker,Minor,2,0,3,0
+P004,Smartwatch,Major,1,0,4,0
+P005,TV,Major,1,0,5,0
