@@ -69,22 +69,7 @@ function refreshFromStorage(){
   prize = prizes.find(p => p.id === selectedPrizeId);
 }
 
-function showInfo(text){ document.getElementById('infoText').textContent = text; }
-
-// function startRollingOnce(callback){
-//   refreshFromStorage();
-//   const eligible = attendees.filter(a => !winners.find(w=>w.name===a.name));
-//   if(eligible.length === 0){ callback(null); return; }
-//   rollingInterval = setInterval(()=>{
-//     const pick = eligible[Math.floor(Math.random()*eligible.length)];
-//     if(pick) document.getElementById('nameBox').textContent = pick.name;
-//   }, 60);
-//   setTimeout(()=>{
-//     clearInterval(rollingInterval);
-//     const pick = eligible[Math.floor(Math.random()*eligible.length)];
-//     callback(pick || null);
-//   }, drawInterval);
-// }
+// function showInfo(text){ document.getElementById('infoText').textContent = text; }
 
 function startRollingOnce(callback){
   refreshFromStorage();
@@ -146,7 +131,7 @@ function startAutoDraw(){
   // validation
   if((parseInt(prize.drawCount)||0) >= (parseInt(prize.totalWinners)||0)){
     document.getElementById('nameBox').textContent = 'All winners for this prize already drawn.';
-    showInfo('Close this tab or press Next to continue.');
+    // showInfo('Close this tab or press Next to continue.');
     document.getElementById('nextBtn').style.display='inline-block';
     updateNextButtonLabel();
     return;
@@ -154,7 +139,7 @@ function startAutoDraw(){
   const eligible = attendees.filter(a => !winners.find(w=>w.name===a.name));
   if(eligible.length === 0){
     document.getElementById('nameBox').textContent='No eligible attendees left.';
-    showInfo('Nothing to draw. Close tab or press Next.');
+    // showInfo('Nothing to draw. Close tab or press Next.');
     document.getElementById('nextBtn').style.display='inline-block';
     return;
   }
@@ -167,13 +152,13 @@ function startAutoDraw(){
 
   if(drawMode === 'batch'){
     batchDrawing = true;
-    showInfo('Batch drawing all remaining winners for this prize...');
+    // showInfo('Batch drawing all remaining winners for this prize...');
     const remaining = (parseInt(prize.totalWinners)||0) - (parseInt(prize.drawCount)||0);
     let drawn = 0;
     function batchStep(){
       startRollingOnce((pick)=>{
         if(!pick){
-          showInfo('No more eligible attendees.');
+          // showInfo('No more eligible attendees.');
           batchDrawing = false;
           document.getElementById('nextBtn').style.display='inline-block';
           updateNextButtonLabel();
@@ -186,7 +171,7 @@ function startAutoDraw(){
           setTimeout(batchStep, 800);
         } else {
           batchDrawing = false;
-          showInfo('Batch draw complete. Press Next to proceed.');
+          // showInfo('Batch draw complete. Press Next to proceed.');
           document.getElementById('nextBtn').style.display='inline-block';
           updateNextButtonLabel();
         }
@@ -197,7 +182,7 @@ function startAutoDraw(){
   }
 
   // single draw mode
-  showInfo('Auto drawing... will stop after 3 seconds.');
+  // showInfo('Auto drawing... will stop after 3 seconds.');
   startRollingOnce((pick)=>{
     if(!pick){
       document.getElementById('nameBox').textContent='No eligible attendees.';
@@ -240,7 +225,7 @@ document.getElementById('claimBtn').addEventListener('click', ()=>{
     currentPick = null;
     setTimeout(()=> startAutoDraw(), 700);
   } else {
-    showInfo('All winners drawn for this prize. Press Next to continue.');
+    // showInfo('All winners drawn for this prize. Press Next to continue.');
     document.getElementById('claimBtn').style.display='none';
     document.getElementById('noShowBtn').style.display='none';
     document.getElementById('nextBtn').style.display='inline-block';
