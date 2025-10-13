@@ -71,18 +71,40 @@ function refreshFromStorage(){
 
 function showInfo(text){ document.getElementById('infoText').textContent = text; }
 
+// function startRollingOnce(callback){
+//   refreshFromStorage();
+//   const eligible = attendees.filter(a => !winners.find(w=>w.name===a.name));
+//   if(eligible.length === 0){ callback(null); return; }
+//   rollingInterval = setInterval(()=>{
+//     const pick = eligible[Math.floor(Math.random()*eligible.length)];
+//     if(pick) document.getElementById('nameBox').textContent = pick.name;
+//   }, 60);
+//   setTimeout(()=>{
+//     clearInterval(rollingInterval);
+//     const pick = eligible[Math.floor(Math.random()*eligible.length)];
+//     callback(pick || null);
+//   }, drawInterval);
+// }
+
 function startRollingOnce(callback){
   refreshFromStorage();
   const eligible = attendees.filter(a => !winners.find(w=>w.name===a.name));
   if(eligible.length === 0){ callback(null); return; }
+
+  // Pick the final winner first
+  const finalPick = eligible[Math.floor(Math.random()*eligible.length)];
+
+  // Rolling effect: just pick random names from eligible visually
   rollingInterval = setInterval(()=>{
     const pick = eligible[Math.floor(Math.random()*eligible.length)];
     if(pick) document.getElementById('nameBox').textContent = pick.name;
   }, 60);
+
   setTimeout(()=>{
     clearInterval(rollingInterval);
-    const pick = eligible[Math.floor(Math.random()*eligible.length)];
-    callback(pick || null);
+    // Show final winner
+    if(finalPick) document.getElementById('nameBox').textContent = '🎉 ' + finalPick.name + ' 🎉';
+    callback(finalPick);
   }, drawInterval);
 }
 

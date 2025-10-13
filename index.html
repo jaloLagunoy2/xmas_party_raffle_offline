@@ -34,7 +34,8 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
     <button id="clearCacheBtn" class="btn-clear">Clear All Cache</button>
     <button id="resetDrawsBtn" class="btn-reset">Reset Prize Draw Counts</button>
     <button id="exportWinnersBtn" class="btn-export">Export Winners CSV</button>
-    
+    <button id="timerToggle" style="padding:10px 20px;font-size:16px;">Page Reloading on (3s)</button>
+
  
   </p>
      <div style="margin-top: 20px;">
@@ -78,7 +79,48 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
   <p>Attendees: <span id="attCount">0</span> | Prizes: <span id="prizeCount">0</span> | Winners: <span id="winnerCount">0</span></p>
 </div>
 
+
+
+
 <script>
+  //+timer
+  let timerSeconds = 3;       // reload interval
+  let counter = timerSeconds; // current countdown
+  let timerInterval = null;   // interval ID
+  let timerRunning = true;    // state
+
+  const btn = document.getElementById('timerToggle');
+
+  function startTimer() {
+    stopTimer(); // ensure no double interval
+    counter = timerSeconds;
+    btn.textContent = `Page Reloading on  (${counter}s)`;
+    timerInterval = setInterval(() => {
+      counter--;
+      btn.textContent = `Page Reloading on  (${counter}s)`;
+      if (counter <= 0) {
+        location.reload();
+      }
+    }, 1000);
+    timerRunning = true;
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerRunning = false;
+    btn.textContent = `Page Auto Reload is OFF`;
+  }
+
+  // Toggle the timer
+  btn.addEventListener('click', () => {
+    if(timerRunning) stopTimer();
+    else startTimer();
+  });
+
+  // Start automatically
+  startTimer();
+  //-timer
   // +background
   const bgInput = document.getElementById('bgInput');
   const clearBgBtn = document.getElementById('clearBgBtn');
@@ -249,6 +291,7 @@ document.getElementById('resetDrawsBtn').addEventListener('click', ()=>{
   localStorage.setItem('prizesData', JSON.stringify(prizes));
   renderPrizes();
   localStorage.setItem('winnersData', JSON.stringify([]));
+  winners=[];
   refreshWinnersTable();
 });
 
@@ -286,6 +329,7 @@ function refreshWinnersTable() {
 
 // Export winners
 document.getElementById('exportWinnersBtn').addEventListener('click', ()=>{
+
   if(winners.length===0) return alert('No winners yet.');
   const rows = [['PrizeID','Prize','WinnerID','WinnerName','Category']];
   winners.forEach(w=> rows.push([w.prizeId, w.prizeName, w.winnerId||'', w.name, w.category||'']));
