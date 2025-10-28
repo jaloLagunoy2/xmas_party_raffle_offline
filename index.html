@@ -24,27 +24,46 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 </head>
 <body>
 <h1>🎄 Christmas Raffle (v6 - Fixed)</h1>
-
 <div class="section">
-  <h3>Upload CSVs (or load cached data)</h3>
-  <p><input type="file" id="attFile" accept=".csv"> Attendees CSV</p>
-  <p><input type="file" id="prizeFile" accept=".csv"> Prizes CSV (id,name,type,totalWinners,drawCount,sequence,auto_claim)</p>
-  <p>
-    <button id="loadBtn">Load & Cache</button>
-    <button id="clearCacheBtn" class="btn-clear">Clear All Cache</button>
-    <button id="resetDrawsBtn" class="btn-reset">Reset Prize Draw Counts</button>
-    <button id="exportWinnersBtn" class="btn-export">Export Winners CSV</button>
-    <button id="timerToggle" style="padding:10px 20px;font-size:16px;">Page Reloading on (3s)</button>
+  <h3 style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+    STEP 1.) Upload CSVs (or load cached data)
+  </h3>
 
- 
-  </p>
-     <div style="margin-top: 20px;">
+  <div id="step1Content" style="margin-top: 10px;">
+    <p><input type="file" id="attFile" accept=".csv"> Attendees CSV</p>
+    <p><input type="file" id="prizeFile" accept=".csv">
+      Prizes CSV (id,name,type,totalWinners,drawCount,sequence,auto_claim)
+    </p>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+      <!-- Left side: Reset group -->
+      <div style="display: flex; gap: 10px;">
+        <button id="loadBtn" class="btn-batch">Load & Cache</button>
+      </div>
+
+      <!-- Right side: Export and reload -->
+      <div style="display: flex; gap: 10px;">
+        <button id="clearCacheBtn" class="btn-clear">Clear All Cache</button>
+        <button id="resetDrawsBtn" class="btn-reset">Reset Prize Draw Counts</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px;">
       <label for="bgInput">Set Background:</label>
       <input type="file" id="bgInput" accept="image/png">
       <button id="clearBgBtn">Clear Background</button>
     </div>
-  <p class="info">Tip: Use "Clear All Cache" to reset all data, or "Reset Prize Draw Counts" to reset draw counts but keep winners.</p>
+
+    <p class="info">
+      Tip: Use "Clear All Cache" to reset all data, or "Reset Prize Draw Counts" to reset draw counts but keep winners.
+    </p>
+  </div>
 </div>
+
+
+
+
+
 
 <div class="section">
   <h3>Prizes (sorted by sequence)</h3>
@@ -55,22 +74,49 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 </div>
 
 
+
+
+
+
+
 <div class="section">
-  <h3>🏆 Winners List
-    <button id="refreshWinners" title="Refresh winners list" style="margin-left:10px;padding:4px 8px;cursor:pointer;">🔄</button>
-  </h3>
-  <table id="winnersTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Prize</th>
-        <th>Winner</th>
-        <th>Category</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+
+  <div class="section">
+    <h3>🏆 Winners List
+      <button id="refreshWinners" hidden title="Refresh winners list" style="margin-left:10px;padding:4px 8px;cursor:pointer;">🔄</button>
+    </h3>
+    <table id="winnersTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Prize</th>
+          <th>Winner</th>
+          <th>Category</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+ 
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+    <!-- Left side: Reset group -->
+    <div style="display: flex; gap: 10px;">
+      <!-- <button id="loadBtn">Load & Cache</button>
+      <button id="clearCacheBtn" class="btn-clear">Clear All Cache</button>
+      <button id="resetDrawsBtn" class="btn-reset">Reset Prize Draw Counts</button> -->
+    </div>
+  
+    <!-- Right side: Export and reload -->
+    <div style="display: flex; gap: 10px;">
+      <button id="exportWinnersBtn" class="btn-export">Export Winners CSV</button>
+      <button id="timerToggle" style="padding:10px 20px;font-size:16px;">
+        Page Reloading on (3s)
+      </button>
+    </div>
+  </div>
+  
 </div>
+
 
 
 
@@ -83,15 +129,30 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 
 
 <script>
+
+
+
   //+timer
   let timerSeconds = 3;       // reload interval
   let counter = timerSeconds; // current countdown
   let timerInterval = null;   // interval ID
   let timerRunning = true;    // state
 
+  // Data (load from localStorage)
+  let attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
+  let prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
+  let winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
+
+
+
   const btn = document.getElementById('timerToggle');
 
   function startTimer() {
+    console.log(prizes);
+    if(prizes  == null || prizes.length == 0) {
+      stopTimer();
+      return;
+    }
     stopTimer(); // ensure no double interval
     counter = timerSeconds;
     btn.textContent = `Page Reloading on  (${counter}s)`;
@@ -174,10 +235,6 @@ function download(filename, text){
   a.download=filename; a.click();
 }
 
-// Data (load from localStorage)
-let attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
-let prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
-let winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
 
 function updateCounts(){
   document.getElementById('attCount').textContent = attendees.length;
@@ -223,13 +280,12 @@ function renderPrizes(){
       <td>${(p.drawCount || 0)}/${p.totalWinners}</td>
       <td>
         
-        ${singleDisabled ? "<span> ** Auto Claim **  </span>" : ''}
               
-        ${disabled ? "<span style='color:red'> ** Finish previous prizes first **  </span>" : ''}
+        ${disabled ? "<span style='color:red'> ** Finish perevious prizes first **  </span>" : ''}
 
         <div ${disabled ? 'hidden': ''} >
           <button class="btn-single"
-            ${singleDisabled ? 'hidden title="Auto-claim prizes use Batch Draw only"' : ''}
+            title="Auto-claim prizes use Batch Draw only"}
             onclick="openDraw('${p.id}','single')">Single Draw</button>
       
           <button class="btn-batch"
@@ -286,7 +342,7 @@ document.getElementById('loadBtn').addEventListener('click', async ()=>{
 
 // Reset draws (drawCount) only
 document.getElementById('resetDrawsBtn').addEventListener('click', ()=>{
-  if(!confirm('Reset draw counts for all prizes? This will NOT remove winners or attendees.')) return;
+  if(!confirm('Reset draw counts for all prizes and winners?.')) return;
   prizes.forEach(p=>p.drawCount=0);
   localStorage.setItem('prizesData', JSON.stringify(prizes));
   renderPrizes();

@@ -252,6 +252,7 @@ function startAutoDraw(){
   document.getElementById('noShowBtn').style.display='none';
   document.getElementById('nextBtn').style.display='none';
   document.getElementById('batchList').innerHTML='';
+
   if(drawMode==='batch'){
     batchDrawing=true;
     const remaining=(+prize.totalWinners||0)-(+prize.drawCount||0);
