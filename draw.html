@@ -231,6 +231,7 @@ function startRollingOnce(callback){
     clearInterval(rollingInterval);
     if(finalPick){
       document.getElementById('nameBox').textContent = '🎉 ' + finalPick.name + ' 🎉';
+      launchConfetti();
     }
     callback(finalPick);
   }, drawInterval);
@@ -286,7 +287,9 @@ function startAutoDraw(){
   document.getElementById('claimBtn').style.display='none';
   document.getElementById('noShowBtn').style.display='none';
   document.getElementById('nextBtn').style.display='none';
-  document.getElementById('batchList').innerHTML='';
+  if (drawMode !== 'single') {
+    document.getElementById('batchList').innerHTML = '';
+  }
 
   if(drawMode==='batch'){
     batchDrawing=true;
@@ -324,6 +327,7 @@ function getNextPrize(seq){
 }
 
 document.getElementById('claimBtn').onclick=()=>{
+  stopConfetti();
   if(!currentPick)return;
   performClaim(currentPick);
   if((+prize.drawCount||0)<(+prize.totalWinners||0)){ currentPick=null; setTimeout(()=>startAutoDraw(),700); }
