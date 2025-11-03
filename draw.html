@@ -261,9 +261,15 @@ function performClaim(pick){
 function updatePrizeBox(){
   prize = prizes.find(p => p.id === selectedPrizeId);
   document.getElementById('caption').textContent = prize
-  ? `${prize.totalWinners} ${prize.totalWinners > 1 ? 'Winners' : 'Winner'} of `
-  : '';
-  document.getElementById('prizeBox').textContent = prize ? `${prize.name}` : 'No prize';
+    ? `${prize.totalWinners} ${prize.totalWinners > 1 ? 'Winners' : 'Winner'} of `
+    : '';
+  if (drawMode == 'single') {
+    document.getElementById('prizeBox').textContent = prize ? `${prize.name} — ${prize.drawCount}/${prize.totalWinners}` : 'No prize';
+  } else {
+    
+    document.getElementById('prizeBox').textContent = prize ? `${prize.name}` : 'No prize';
+  }
+  
 }
 
 function startAutoDraw(){
