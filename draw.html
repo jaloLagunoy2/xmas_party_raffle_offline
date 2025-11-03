@@ -16,9 +16,7 @@
     --border-glow: rgba(255,255,255,0.3);
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   body {
     margin: 0;
@@ -74,7 +72,6 @@
     to { opacity: 1; transform: scale(1); }
   }
 
-  /* --- Batch List under nameBox --- */
   #batchList {
     display: flex;
     flex-wrap: wrap;
@@ -86,17 +83,15 @@
   }
 
   .winner-item {
-    background: rgba(255,255,255,0.1);
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-weight: 500;
-    color: var(--color-light);
     background: var(--glass-bg);
     border: 2px solid var(--border-glow);
-    backdrop-filter: blur(12px);
+    padding: 10px 18px;
+    border-radius: 10px;
     font-weight: bold;
     text-align: center;
     white-space: nowrap;
+    color: var(--color-light);
+    backdrop-filter: blur(12px);
   }
 
   .controls {
@@ -136,32 +131,23 @@
     opacity: 0.8;
   }
 
-  /* Confetti Canvas */
   #confettiCanvas {
     position: fixed;
     inset: 0;
     z-index: -1;
   }
 
-  @media (max-width: 600px) {
-    #nameBox { padding: 25px 30px; min-width: 80%; font-size: 2.2rem; }
-    .winner-item { font-size: 0.9rem; padding: 6px 10px; }
-    .controls { bottom: 20px; gap: 8px; }
-    button { font-size: 14px; padding: 10px 18px; }
-  }
-  
   #mode {
     position: fixed;
     bottom: 10px;
     right: 10px;
-    /* background: rgba(0, 0, 0, 0.5); */
     color: white;
     padding: 8px 14px;
     border-radius: 8px;
     font-size: 10px;
     font-weight: 500;
     z-index: 1000;
-    display: block; /* make sure it's visible */
+    display: block;
   }
 
   .prizebox-Mod {
@@ -173,6 +159,13 @@
     font-weight: 100 !important;
     margin-top: -15vh;
   }
+
+  @media (max-width: 600px) {
+    #nameBox { padding: 25px 30px; min-width: 80%; font-size: 2.2rem; }
+    .winner-item { font-size: 0.9rem; padding: 6px 10px; }
+    .controls { bottom: 20px; gap: 8px; }
+    button { font-size: 14px; padding: 10px 18px; }
+  }
 </style>
 </head>
 <body>
@@ -182,7 +175,7 @@
 
 <div id="caption" class="caption-Mod"></div>
 <div id="prizeBox" class="prizebox-Mod">Preparing prize...</div>
-<div id="nameBox">🎄 Waiting to Start 🎄 </div>
+<div id="nameBox">🎄 Waiting to Start 🎄</div>
 <div id="batchList"></div>
 
 <div class="controls">
@@ -196,7 +189,6 @@
 <div id="infoText"></div>
 
 <script>
-/* ---------- (same JS logic as your original, unchanged) ---------- */
 let attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
 let prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
 let winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
@@ -213,16 +205,15 @@ function loadBackground() {
 }
 loadBackground();
 refreshFromStorage();
- drawMode = localStorage.getItem('drawMode') || 'single';
- document.getElementById('mode').textContent = drawMode == "batch" ? "Batch Draw" : "Single Draw";
+drawMode = localStorage.getItem('drawMode') || 'single';
+document.getElementById('mode').textContent = drawMode == "batch" ? "Batch Draw" : "Single Draw";
 
 function refreshFromStorage(){
   attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
   prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
   winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
   prize = prizes.find(p => p.id === selectedPrizeId);
-   updatePrizeBox();
-     
+  updatePrizeBox();
 }
 
 function showInfo(msg){ document.getElementById('infoText').textContent = msg; }
@@ -240,7 +231,6 @@ function startRollingOnce(callback){
     clearInterval(rollingInterval);
     if(finalPick){
       document.getElementById('nameBox').textContent = '🎉 ' + finalPick.name + ' 🎉';
-      launchConfetti();
     }
     callback(finalPick);
   }, drawInterval);
@@ -263,16 +253,13 @@ function performClaim(pick){
   localStorage.setItem('winnersData', JSON.stringify(winners));
   localStorage.setItem('prizesData', JSON.stringify(prizes));
   localStorage.setItem('attendeesData', JSON.stringify(attendees));
-  if(prize.totalWinners > 1) {
-    appendWinnerToList(pick);
-  }
+  if(prize.totalWinners > 1) appendWinnerToList(pick);
   updatePrizeBox();
   window.opener && window.opener.postMessage({type:'raffle:update'}, '*');
 }
 
 function updatePrizeBox(){
   prize = prizes.find(p => p.id === selectedPrizeId);
-  // document.getElementById('prizeBox').textContent = prize ? `${prize.name} — ${prize.drawCount}/${prize.totalWinners}` : 'No prize';
   document.getElementById('caption').textContent = prize
   ? `${prize.totalWinners} ${prize.totalWinners > 1 ? 'Winners' : 'Winner'} of `
   : '';
@@ -280,6 +267,7 @@ function updatePrizeBox(){
 }
 
 function startAutoDraw(){
+  stopConfetti(); // 🧹 Stop confetti at start of next draw
   refreshFromStorage();
   if(!prize){ document.getElementById('nameBox').textContent='Prize not found'; return; }
   if((+prize.drawCount||0) >= (+prize.totalWinners||0)){
@@ -303,7 +291,12 @@ function startAutoDraw(){
         if(!pick){ batchDrawing=false; return; }
         performClaim(pick); drawn++;
         if(drawn<remaining){ setTimeout(batchStep,800); }
-        else { batchDrawing=false; document.getElementById('nextBtn').style.display='inline-block'; updateNextButtonLabel(); }
+        else {
+          batchDrawing=false;
+          document.getElementById('nextBtn').style.display='inline-block';
+          updateNextButtonLabel();
+          launchConfetti(); // 🎉 Confetti starts and stays active
+        }
       });
     } batchStep(); return;
   }
@@ -373,23 +366,39 @@ window.addEventListener('beforeunload',()=>{
 /* ---------- Confetti Effect ---------- */
 const canvas=document.getElementById('confettiCanvas');
 const ctx=canvas.getContext('2d');
-let confetti=[];
+let confetti=[]; let confettiActive=false;
+
 function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
 window.addEventListener('resize',resize);resize();
 
 function launchConfetti(){
-  for(let i=0;i<120;i++){
+  confetti=[];
+  for(let i=0;i<150;i++){
     confetti.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height/2,
-      r:Math.random()*6+2,c:`hsl(${Math.random()*360},100%,70%)`,v:Math.random()*2+2});
+      r:Math.random()*6+2,c:`hsl(${Math.random()*360},100%,70%)`,v:Math.random()*2+2,a:1});
   }
+  confettiActive=true;
 }
+
+function stopConfetti(){
+  confettiActive=false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
 function drawConfetti(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  confetti.forEach(p=>{
-    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle=p.c;ctx.fill();
-    p.y+=p.v;if(p.y>canvas.height)p.y=-10;
-  });
+  if(confettiActive){
+    confetti.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.c;
+      ctx.globalAlpha=p.a;
+      ctx.fill();
+      p.y+=p.v;
+      if(p.y>canvas.height)p.y=-10;
+    });
+    ctx.globalAlpha=1.0;
+  }
   requestAnimationFrame(drawConfetti);
 }
 drawConfetti();
