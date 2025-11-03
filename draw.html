@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>🎄 Rebisco Raffle Draw</title>
+<title>Rebisco Raffle Draw</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -11,6 +11,7 @@
     --rebisco-yellow: #FFD24C;
     --dark-bg: #111;
     --light-bg: #fff8f2;
+    --color-light: #fff8f2;
     --glass-bg: rgba(255,255,255,0.15);
     --border-glow: rgba(255,255,255,0.3);
   }
@@ -46,7 +47,7 @@
     to { opacity: 0.7; transform: scale(1.1); }
   }
 
-  #prizeBox {
+  #prizeBox, #caption {
     font-size: 2rem;
     font-weight: 600;
     margin-bottom: 1rem;
@@ -89,7 +90,7 @@
     padding: 10px 18px;
     border-radius: 10px;
     font-weight: 500;
-    color: var(--rebisco-yellow);
+    color: var(--color-light);
     background: var(--glass-bg);
     border: 2px solid var(--border-glow);
     backdrop-filter: blur(12px);
@@ -148,6 +149,30 @@
     .controls { bottom: 20px; gap: 8px; }
     button { font-size: 14px; padding: 10px 18px; }
   }
+  
+  #mode {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    /* background: rgba(0, 0, 0, 0.5); */
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    z-index: 1000;
+    display: block; /* make sure it's visible */
+  }
+
+  .prizebox-Mod {
+    font-size: 3rem !important;
+  }
+
+  .caption-Mod {
+    margin-bottom: 0 !important;
+    font-weight: 100 !important;
+    margin-top: -15vh;
+  }
 </style>
 </head>
 <body>
@@ -155,7 +180,8 @@
 <canvas id="confettiCanvas"></canvas>
 <div class="overlay"></div>
 
-<div id="prizeBox">Preparing prize...</div>
+<div id="caption" class="caption-Mod"></div>
+<div id="prizeBox" class="prizebox-Mod">Preparing prize...</div>
 <div id="nameBox">🎄 Waiting to Start 🎄 </div>
 <div id="batchList"></div>
 
@@ -237,14 +263,20 @@ function performClaim(pick){
   localStorage.setItem('winnersData', JSON.stringify(winners));
   localStorage.setItem('prizesData', JSON.stringify(prizes));
   localStorage.setItem('attendeesData', JSON.stringify(attendees));
-  appendWinnerToList(pick);
+  if(prize.totalWinners > 1) {
+    appendWinnerToList(pick);
+  }
   updatePrizeBox();
   window.opener && window.opener.postMessage({type:'raffle:update'}, '*');
 }
 
 function updatePrizeBox(){
   prize = prizes.find(p => p.id === selectedPrizeId);
-  document.getElementById('prizeBox').textContent = prize ? `${prize.name} — ${prize.drawCount}/${prize.totalWinners}` : 'No prize';
+  // document.getElementById('prizeBox').textContent = prize ? `${prize.name} — ${prize.drawCount}/${prize.totalWinners}` : 'No prize';
+  document.getElementById('caption').textContent = prize
+  ? `${prize.totalWinners} ${prize.totalWinners > 1 ? 'Winners' : 'Winner'} of `
+  : '';
+  document.getElementById('prizeBox').textContent = prize ? `${prize.name}` : 'No prize';
 }
 
 function startAutoDraw(){

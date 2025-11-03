@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Christmas Raffle v6 - Fixed</title>
+<title>Rebisco Christmas Raffle</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body { font-family: Arial, sans-serif; margin: 20px; background:#f6f9fb; color:#222; }
@@ -23,7 +23,7 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 </style>
 </head>
 <body>
-<h1>🎄 Christmas Raffle (v6 - Fixed)</h1>
+<h1>Rebisco Christmas Raffle</h1>
 <div class="section">
   <h3 style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
     STEP 1.) Upload CSVs (or load cached data)
@@ -198,7 +198,7 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 
   // Save selected file and preview it
   bgInput.addEventListener('change', (e) => {
-    stopTimer();
+      startTimer();
       const file = e.target.files[0];
       if (!file) return;
 
@@ -215,6 +215,12 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
   clearBgBtn.addEventListener('click', () => {
       localStorage.removeItem('raffleBgPath');
       loadBackground();
+  });
+
+  bgInput.addEventListener('click', (e) => {
+    if(timerRunning) {
+      stopTimer();
+    }
   });
 
   // Initial load
