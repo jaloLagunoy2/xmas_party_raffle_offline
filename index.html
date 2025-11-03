@@ -148,7 +148,6 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
   const btn = document.getElementById('timerToggle');
 
   function startTimer() {
-    console.log(prizes);
     if(prizes  == null || prizes.length == 0) {
       stopTimer();
       return;
@@ -199,6 +198,7 @@ button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 
   // Save selected file and preview it
   bgInput.addEventListener('change', (e) => {
+    stopTimer();
       const file = e.target.files[0];
       if (!file) return;
 
@@ -314,8 +314,18 @@ function openDraw(prizeId, mode){
 
 }
 
+
+ document.getElementById('attFile')
+ .addEventListener('click', async ()=>{
+  stopTimer();
+ });
+  document.getElementById('prizeFile')
+ .addEventListener('click', async ()=>{
+  stopTimer();
+ });
 // Load & cache from files
 document.getElementById('loadBtn').addEventListener('click', async ()=>{
+  stopTimer();
   const aFile = document.getElementById('attFile').files[0];
   const pFile = document.getElementById('prizeFile').files[0];
   if(!aFile || !pFile) return alert('Please choose both CSV files.');
