@@ -6,6 +6,54 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+.animate__heartBeat {
+  animation: heartBeat 3s ease-in-out infinite;
+  display: inline-block;
+  transform-origin: center;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  10% { transform: scale(1.2); }
+  20% { transform: scale(1); }
+  30% { transform: scale(1.15); }
+  40% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+  /* Animated silver gradient glow */
+.glow-silver {
+  font-size: 4rem;
+  font-weight: 900;
+  font-family: 'Arial Black', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+
+  background: linear-gradient(
+    90deg,
+    #999 0%,
+    #fff 20%,
+    #aaa 40%,
+    #eee 60%,
+    #999 80%,
+    #fff 100%
+  );
+  background-size: 200% auto;
+  color: #fff;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: shine 2.5s linear infinite;
+
+  text-shadow: 
+    0 0 10px rgba(255,255,255,0.4),
+    0 0 20px rgba(180,180,200,0.3);
+}
+
+@keyframes shine {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
   :root {
     --rebisco-orange: #E94224;
     --rebisco-yellow: #FFD24C;
@@ -150,6 +198,21 @@
     display: block;
   }
 
+  
+  #ctrls {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    z-index: 1000;
+    display: block;
+  }
+
+
   .prizebox-Mod {
     font-size: 3rem !important;
   }
@@ -174,7 +237,8 @@
 <div class="overlay"></div>
 
 <div id="caption" class="caption-Mod"></div>
-<div id="prizeBox" class="prizebox-Mod">Preparing prize...</div>
+<div id="prizeBox" class ="prizebox-Mod animate__heartBeat " >Preparing prize...</div>
+<!-- <div id="prizeBox" class ="" class="">Preparing prize...</div> -->
 <div id="nameBox">🎄 Waiting to Start 🎄</div>
 <div id="batchList"></div>
 
@@ -184,65 +248,80 @@
   <button id="noShowBtn" class="btn-noshow" style="display:none">No Show</button>
   <button id="nextBtn" class="btn-next" style="display:none">Next</button>
   <div id="mode"></div>
+  <div id="ctrls">[ENTER]Start Draw [SPACEBAR] [C]Claim  [N]No Show  [TAB]DRAW-MODE [BACKSPACE]CONFIG  </div>
 </div>
 
 <div id="infoText"></div>
 
 <script>
+
+  let attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
+  let prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
+  let winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
+  let selectedPrizeId = localStorage.getItem('selectedPrizeId');
+  let drawMode = localStorage.getItem('drawMode') || 'single';
+  let prize = prizes.find(p => p.id === selectedPrizeId);
+  let rollingInterval = null, currentPick = null;
+  let batchDrawing = false;
+  let drawInterval = 1000;
+
+
     
     document.addEventListener("keydown", function(event) {
 
-      // Ignore repeated firing while holding the key
-  if (event.repeat) return;   
+          // Ignore repeated firing while holding the key
+      if (event.repeat) return;   
 
-      const key = event.key.toLowerCase(); // normalize case
-      // Check if Backspace is pressed
-      if (key === "backspace") {
-        // Prevent browser from navigating back
-        event.preventDefault();
+          const key = event.key.toLowerCase(); // normalize case
+          // Check if Backspace is pressed
+          if (key === "backspace") {
+            // Prevent browser from navigating back
+            event.preventDefault();
 
-        // Redirect to index.html
-        window.location.href = "index.html";
-      }
+            // Redirect to index.html
+            window.location.href = "index.html";
+          }
 
-      // Optional: handle Enter and Space too
-      if (key === "enter") {
-        if (document.getElementById('startDrawBtn').style.display !== 'none') {
-           startAutoDraw();
-        }
-        
-      }
+          // Optional: handle Enter and Space too
+          if (key === "enter") {
+            if (document.getElementById('startDrawBtn').style.display !== 'none') {
+              startAutoDraw();
+            }
+            
+          }
 
-      if (key === " ") {
-        event.preventDefault(); // Prevent page scroll
-        if (document.getElementById('nextBtn').style.display !== 'none') {
-           nextBtnClick();
-        }
-      }
+          if (key === " ") {
+            event.preventDefault(); // Prevent page scroll
+            if (document.getElementById('nextBtn').style.display !== 'none') {
+              nextBtnClick();
+            }
+          }
 
 
-      if (key === "c") {
-        if (document.getElementById('claimBtn').style.display !== 'none') {
-           claimBtnClick();
-        }
-      }
-      
-      if (key === "n") {
-          if (document.getElementById('noShowBtn').style.display !== 'none') {
-           noShowBtnClick();
-        }
-      }
+          if (key === "c") {
+            if (document.getElementById('claimBtn').style.display !== 'none') {
+              claimBtnClick();
+            }
+          }
+          
+          if (key === "n") {
+              if (document.getElementById('noShowBtn').style.display !== 'none') {
+              noShowBtnClick();
+            }
+          }
+
+          if (key === "tab") {
+             event.preventDefault(); // Prevent tab
+              let d = drawMode =="single" ? "batch" : "single";
+              localStorage.setItem('drawMode',d);
+              updateMode(); 
+          }
+
+          
+
+
     });
 
-let attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
-let prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
-let winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
-let selectedPrizeId = localStorage.getItem('selectedPrizeId');
-let drawMode = localStorage.getItem('drawMode') || 'single';
-let prize = prizes.find(p => p.id === selectedPrizeId);
-let rollingInterval = null, currentPick = null;
-let batchDrawing = false;
-let drawInterval = 1000;
 
 function loadBackground() {
   const bg = localStorage.getItem('raffleBgPath');
@@ -250,9 +329,12 @@ function loadBackground() {
 }
 loadBackground();
 refreshFromStorage();
-drawMode = localStorage.getItem('drawMode') || 'single';
-document.getElementById('mode').textContent = drawMode == "batch" ? "Batch Draw" : "Single Draw";
+updateMode();
 
+function updateMode() {
+  drawMode = localStorage.getItem('drawMode') || 'single';
+  document.getElementById('mode').textContent = drawMode == "batch" ? "Batch Draw" : "Single Draw";
+}
 function refreshFromStorage(){
   attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
   prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
@@ -376,6 +458,8 @@ document.getElementById('claimBtn').onclick=()=>{
   claimBtnClick();
 };
 function claimBtnClick() {
+ document.getElementById('claimBtn').style.display='none';
+  document.getElementById('noShowBtn').style.display='none';
   stopConfetti();
   if(!currentPick)return;
   performClaim(currentPick);
@@ -389,6 +473,8 @@ document.getElementById('noShowBtn').onclick=()=>{
 };
 
 function noShowBtnClick() {
+  document.getElementById('claimBtn').style.display='none';
+  document.getElementById('noShowBtn').style.display='none';
   currentPick=null; clearInterval(rollingInterval);
   setTimeout(()=>startAutoDraw(),700);
 }
@@ -398,6 +484,7 @@ document.getElementById('nextBtn').onclick=()=>{
 };
 
 function nextBtnClick() {
+ document.getElementById('nextBtn').style.display='none';
    const next=getNextPrize(prize.sequence);
   if(!next){ alert('No more prizes'); return; }
   localStorage.setItem('selectedPrizeId', next.id);
