@@ -189,6 +189,51 @@
 <div id="infoText"></div>
 
 <script>
+    
+    document.addEventListener("keydown", function(event) {
+
+      // Ignore repeated firing while holding the key
+  if (event.repeat) return;   
+
+      const key = event.key.toLowerCase(); // normalize case
+      // Check if Backspace is pressed
+      if (key === "backspace") {
+        // Prevent browser from navigating back
+        event.preventDefault();
+
+        // Redirect to index.html
+        window.location.href = "index.html";
+      }
+
+      // Optional: handle Enter and Space too
+      if (key === "enter") {
+        if (document.getElementById('startDrawBtn').style.display !== 'none') {
+           startAutoDraw();
+        }
+        
+      }
+
+      if (key === " ") {
+        event.preventDefault(); // Prevent page scroll
+        if (document.getElementById('nextBtn').style.display !== 'none') {
+           nextBtnClick();
+        }
+      }
+
+
+      if (key === "c") {
+        if (document.getElementById('claimBtn').style.display !== 'none') {
+           claimBtnClick();
+        }
+      }
+      
+      if (key === "n") {
+          if (document.getElementById('noShowBtn').style.display !== 'none') {
+           noShowBtnClick();
+        }
+      }
+    });
+
 let attendees = JSON.parse(localStorage.getItem('attendeesData') || '[]');
 let prizes = JSON.parse(localStorage.getItem('prizesData') || '[]');
 let winners = JSON.parse(localStorage.getItem('winnersData') || '[]');
@@ -274,6 +319,7 @@ function updatePrizeBox(){
 }
 
 function startAutoDraw(){
+  document.getElementById('startDrawBtn').style.display='none';
   stopConfetti(); // 🧹 Stop confetti at start of next draw
   refreshFromStorage();
   if(!prize){ document.getElementById('nameBox').textContent='Prize not found'; return; }
@@ -327,20 +373,32 @@ function getNextPrize(seq){
 }
 
 document.getElementById('claimBtn').onclick=()=>{
+  claimBtnClick();
+};
+function claimBtnClick() {
   stopConfetti();
   if(!currentPick)return;
   performClaim(currentPick);
   if((+prize.drawCount||0)<(+prize.totalWinners||0)){ currentPick=null; setTimeout(()=>startAutoDraw(),700); }
   else { document.getElementById('claimBtn').style.display='none'; document.getElementById('noShowBtn').style.display='none'; document.getElementById('nextBtn').style.display='inline-block'; updateNextButtonLabel(); }
-};
+
+}
 
 document.getElementById('noShowBtn').onclick=()=>{
-  currentPick=null; clearInterval(rollingInterval);
-  setTimeout(()=>startAutoDraw(),700);
+  noShowBtnClick();
 };
 
+function noShowBtnClick() {
+  currentPick=null; clearInterval(rollingInterval);
+  setTimeout(()=>startAutoDraw(),700);
+}
+
 document.getElementById('nextBtn').onclick=()=>{
-  const next=getNextPrize(prize.sequence);
+ nextBtnClick();
+};
+
+function nextBtnClick() {
+   const next=getNextPrize(prize.sequence);
   if(!next){ alert('No more prizes'); return; }
   localStorage.setItem('selectedPrizeId', next.id);
   selectedPrizeId=next.id; refreshFromStorage(); updatePrizeBox(); currentPick=null;
@@ -349,7 +407,7 @@ document.getElementById('nextBtn').onclick=()=>{
   document.getElementById('nextBtn').style.display='none';
   document.getElementById('batchList').innerHTML='';
   setTimeout(()=>startAutoDraw(),500);
-};
+}
 
 function updateNextButtonLabel(){
   prize = prizes.find(p => p.id === selectedPrizeId);
@@ -359,9 +417,10 @@ function updateNextButtonLabel(){
 }
 
 document.getElementById('startDrawBtn').onclick=()=>{
-  document.getElementById('startDrawBtn').style.display='none';
-  startAutoDraw();
+ startAutoDraw();
 };
+
+  
 
 window.addEventListener('message',e=>{
   if(e.data && e.data.type==='raffle:update'){ refreshFromStorage(); updateNextButtonLabel(); }
