@@ -14,19 +14,189 @@ th { background:#fafafa; }
 button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
 .btn-single { background:#007bff; color:white; }
 .btn-batch { background:#6f42c1; color:white; }
+.btn-guide { background:#ffe678; color:rgb(33, 2, 2); }
 .btn-reset { background:#dc3545; color:white; }
 .btn-clear { background:#6c757d; color:white; }
 .btn-export { background:#28a745; color:white; }
 .completed { background:#d4edda; }
 .disabled { opacity:0.5; pointer-events:none; }
 .info { font-size:14px; color:#555; margin-top:8px; }
+
+
+
+ .open-modal-btn {
+    padding: 8px 14px;
+    background: #fe6310;
+    color: #fff;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+
+  .modal-box {
+    background: #fff;
+    width: 80%;
+    max-width: 900px;
+    max-height: 90vh;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    background: #ed6206;
+    color: rgb(255, 246, 246);
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-content {
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    padding: 10px;
+    text-align: right;
+    border-top: 1px solid #ccc;
+  }
+
+  .close-modal-btn {
+    padding: 6px 12px;
+  }
+
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    color: white;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
 <h1>Rebisco Christmas Raffle</h1>
+<!-- Open Modal Button -->
+<button onclick="openHowToModal()" class="open-modal-btn">How to Use the System</button>
+
+<!-- Modal Container -->
+<div id="howToUseModal" class="modal-overlay">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <h2>How to Use the System</h2>
+      <button class="close-btn" onclick="closeHowToModal()">✕</button>
+    </div>
+
+    <div class="modal-content">
+
+      <h3>Reminder</h3>
+      <p><strong>Please be reminded:</strong> This system stores all data inside the <strong>browser's cache</strong> only.
+      It does <strong>not</strong> connect to any server and can be used <strong>offline</strong>.
+      Clearing your browser storage or using a different device/browser will remove the stored data.</p>
+
+      <hr>
+
+      <h3>Templates</h3>
+      <p>You can find the required <strong>Attendees</strong> and <strong>Prizes</strong> templates inside the <strong>project folder</strong>.</p>
+      <p>For easier editing and formatting, open the templates using:</p>
+      <ul>
+        <li><strong>Microsoft Excel</strong>, or</li>
+        <li><strong>Google Sheets</strong> (upload the file to Google Drive)</li>
+      </ul>
+      <p>Make sure to follow the column format exactly to avoid loading errors.</p>
+
+      <hr>
+
+      <h3>1. Setting Up Attendees and Prizes</h3>
+      <p>Upload the <strong>Attendees</strong> and <strong>Prizes</strong> templates. Make sure they are filled correctly and uploaded to the correct sections.</p>
+      <p>Click the <strong>"Load & Cache"</strong> (purple) button to load the data.</p>
+      <p>You will see:</p>
+      <ul>
+        <li>A list of prizes in the <strong>Prizes List</strong></li>
+        <li>Counts of attendees, prizes, and winners in the <strong>Cache Info</strong> tab (scroll to bottom)</li>
+      </ul>
+
+      <hr>
+
+      <h3>2. Setting Up the Background</h3>
+      <p>In the <strong>Setup Background</strong> section, select an image file. If successful, it will appear automatically.</p>
+
+      <h4>Reset Buttons</h4>
+      <ul>
+        <li><strong>Clear Background</strong> – removes background image</li>
+        <li><strong>Clear All Cache</strong> – clears attendees and prizes from memory</li>
+        <li><strong>Reset Prize Draw Counts</strong> – removes winners and resets draw progress</li>
+      </ul>
+
+      <p><strong>Page Auto Reload</strong> – toggles automatic page refresh for updating lists.</p>
+
+      <hr>
+
+      <h3>3. How to Draw a Raffle</h3>
+
+      <strong>Single Draw</strong>
+      <ul>
+        <li>Draws one winner at a time</li>
+        <li>Shows <strong>Claim</strong> and <strong>No Show</strong> buttons</li>
+        <li><strong>Claim</strong> saves winner</li>
+        <li><strong>No Show</strong> redraws a new winner</li>
+      </ul>
+
+      <strong>Batch Draw</strong>
+      <ul>
+        <li>Automatically draws winners until prize limit is reached</li>
+        <li>Winners are saved automatically</li>
+      </ul>
+
+      <strong>Next Prize</strong>
+      <ul>
+        <li>Moves to the next prize and draws using current draw mode</li>
+      </ul>
+
+      <hr>
+
+      <h3>4. Exporting Winners List</h3>
+      <p>Go to the <strong>Winners List</strong> section → click <strong>Export Winners</strong> to download a CSV of winners.</p>
+
+      <hr>
+
+      <h3>5. Draw Screen Keyboard Controls</h3>
+      <ul>
+        <li><strong>ENTER</strong> –Start Draw</li>
+        <li><strong>SPACEBAR</strong> – Start Draw Animation</li>
+        <li><strong>C</strong> – Claim Winner</li>
+        <li><strong>N</strong> – No Show / Redraw</li>
+        <li><strong>TAB</strong> – Switch Draw Mode (Single / Batch)</li>
+        <li><strong>BACKSPACE</strong> – Open Configuration Screen</li>
+        <li><strong>H</strong> – Show/Hide On-Screen Controls</li>
+      </ul>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="close-modal-btn" onclick="closeHowToModal()">Close</button>
+    </div>
+
+  </div>
+</div>
 <div class="section">
+ 
   <h3 style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
-    STEP 1.) Upload CSVs (or load cached data)
+    Upload CSVs (or load cached data)
   </h3>
 
   <div id="step1Content" style="margin-top: 10px;">
@@ -454,6 +624,20 @@ window.addEventListener('message', (e) => {
     renderWinners();
   }
 });
+
+ function openHowToModal() {
+    document.getElementById("howToUseModal").style.display = "flex";
+  }
+  function closeHowToModal() {
+    document.getElementById("howToUseModal").style.display = "none";
+  }
+
+  // Close when clicking outside the modal box
+  document.addEventListener("click", function(e){
+    stopTimer();
+    const modal = document.getElementById("howToUseModal");
+    if(e.target === modal){ closeHowToModal(); }
+  });
 
 </script>
 </body>
