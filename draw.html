@@ -248,7 +248,7 @@
   <button id="noShowBtn" class="btn-noshow" style="display:none">No Show</button>
   <button id="nextBtn" class="btn-next" style="display:none">Next</button>
   <div id="mode"></div>
-  <div id="ctrls">[ENTER]Start Draw [SPACEBAR] [C]Claim  [N]No Show  [TAB]DRAW-MODE [BACKSPACE]CONFIG  </div>
+  <div id="ctrls">[ENTER]Start Draw [SPACEBAR] [C]Claim  [N]No Show  [TAB]DRAW-MODE [H]HIDE/SHOW CONTROLS [BACKSPACE]CONFIG SCREEN  </div>
 </div>
 
 <div id="infoText"></div>
@@ -297,12 +297,33 @@
             }
           }
 
+           if (key === "h") {
+                const ctrls = document.getElementById("ctrls");
+                if (ctrls.style.display === "none") {
+                    ctrls.style.display = "block";
+                } else {
+                    ctrls.style.display = "none";
+                }
+
+               const md = document.getElementById("mode");
+                if (md.style.display === "none") {
+                    md.style.display = "block";
+                } else {
+                    md.style.display = "none";
+                }
+          }
+
 
           if (key === "c") {
             if (document.getElementById('claimBtn').style.display !== 'none') {
               claimBtnClick();
             }
           }
+
+
+
+
+
           
           if (key === "n") {
               if (document.getElementById('noShowBtn').style.display !== 'none') {
