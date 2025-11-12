@@ -412,12 +412,7 @@ function updatePrizeBox(){
   document.getElementById('caption').textContent = prize
     ? `${prize.totalWinners} ${prize.totalWinners > 1 ? 'Winners' : 'Winner'} of `
     : '';
-  if (drawMode == 'single') {
-    document.getElementById('prizeBox').textContent = prize ? `${prize.name} — ${prize.drawCount}/${prize.totalWinners}` : 'No prize';
-  } else {
-    
-    document.getElementById('prizeBox').textContent = prize ? `${prize.name}` : 'No prize';
-  }
+  document.getElementById('prizeBox').textContent = prize ? `${prize.name}` : 'No prize';
   
 }
 
@@ -520,7 +515,7 @@ function nextBtnClick() {
 function updateNextButtonLabel(){
   prize = prizes.find(p => p.id === selectedPrizeId);
   const next = getNextPrize(prize.sequence);
-  document.getElementById('nextBtn').textContent = next ? `Next: ${next.name}` : 'No more prizes';
+  document.getElementById('nextBtn').textContent = next ? `Next Prize` : 'No more prizes';
   updatePrizeBox();
 }
 
